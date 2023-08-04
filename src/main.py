@@ -6,8 +6,10 @@ class App(tk.Tk):
     # 20 buffer on all sides
     # 30 cell size
     
-    def __init__(self, fumen: str):
+    def __init__(self, filename: str):
         super().__init__()
+        self.fumens = self.read_fumens(filename)
+        self.fumen_index = 0 
         self.pages = []     # all the pages loaded in the fumen
         self.cells = []     # array of 23x10 rectangles
         self.index = 0      # which page currently showing
@@ -16,8 +18,17 @@ class App(tk.Tk):
         self.canvas.pack()
 
         self.bind('<Key>', self.key_pressed)
-        self.setup(fumen)
-    
+        self.bind('<Return>', self.return_key)
+        self.entry = tk.Entry(self)
+        self.entry.place(x=10, y=0)
+        self.init_board()
+
+    def return_key(self, _):
+        self.fumen_index = int(self.entry.get())
+        self.entry.delete(0, tk.END)
+        print("Displaying", self.fumens[self.fumen_index])
+        self.setup()
+        
     def key_pressed(self, event):
         if event.keycode == 113: # left
             self.index = max(0, self.index - 1)
@@ -49,11 +60,15 @@ class App(tk.Tk):
         x1, x2 = col * 30, col * 30 + 30
         return [x1 + 20, y1 + 20, x2 + 20, y2 + 20]
     
-    def setup(self, fumen: str): 
+    def setup(self): 
+        fumen = self.fumens[self.fumen_index]
         self.pages = decode(fumen)
         self.n = len(self.pages)
-        self.init_board()
         self.update_board()
+
+    def read_fumens(self, filename: str):
+        with open(filename) as f:
+            return f.readlines()
 
     def display(self):
         try:
@@ -65,7 +80,7 @@ class App(tk.Tk):
 
 
 def main():
-    app = App("v115@vhHJEJWPJyKJz/I1QJUNJvIJAgH")
+    app = App("fumens.txt")
     app.display()
 
 if __name__ == "__main__":
